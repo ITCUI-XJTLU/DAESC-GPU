@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 import numpy as np
+from .daesc_bb_gpu import * 
+from .daesc_mix_gpu import * 
 
 def load_example_data():
     """
