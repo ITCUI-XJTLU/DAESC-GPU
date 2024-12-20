@@ -20,7 +20,7 @@ from scipy.optimize import minimize
 from scipy.special import betaln
 import time
 
-import tools
+from . import tools
 
 # Kernel Functions (in C++ Codes)
 
