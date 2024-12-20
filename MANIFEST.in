@@ -1,0 +1,1 @@
+include daesc_gpu/data/*.parquet

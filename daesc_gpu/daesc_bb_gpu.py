@@ -49,8 +49,8 @@ def optimize_multiple_starts(y, n, num_starts=10):
         beta_hat = np.exp(result.x[1])
         best_phi = 1 / (1 + alpha_hat + beta_hat)
     if best_phi is not None:
-        phi = 1 / (1 / best_phi - 1)  # 根据 R 的公式
-        phi = max(phi, 0.05)         # 确保 phi >= 0.05
+        phi = 1 / (1 / best_phi - 1)  
+        phi = max(phi, 0.05)     
     else:
         phi = 0.05
     return phi
