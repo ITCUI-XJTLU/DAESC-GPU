@@ -20,7 +20,8 @@ from scipy.optimize import minimize
 from scipy.special import betaln
 import time
 
-from .tools import *
+from .tools import optimize_multiple_starts, beta_binomial_log_likelihood, clear_memory, split_array
+
 
 # Kernel Functions (in C++ Codes)
 
