@@ -1,0 +1,8 @@
+# macOS系统自动生成的文件
+.DS_Store
+
+# Python缓存文件
+__pycache__/
+*.pyc
+*.pyo
+
