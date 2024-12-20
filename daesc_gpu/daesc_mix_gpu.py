@@ -20,7 +20,7 @@ from scipy.optimize import minimize
 from scipy.special import betaln
 import time
 
-from . import tools
+from .tools import *
 
 # Kernel Functions for Mix model  (C++ codes)
 
