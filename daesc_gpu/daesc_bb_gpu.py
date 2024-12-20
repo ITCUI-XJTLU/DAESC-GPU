@@ -569,7 +569,7 @@ def daesc_bb_gpu(ynidx_data,
                  part =1, num_iteration=50, min_iter=20):  
   ################################################################
   # make one-hot matrix
-  labels = ynx_data_cuomo[-2, :].astype(int)
+  labels = ynidx_data[-2, :].astype(int)
   num_classes = np.max(labels) + 1
   id_data = np.eye(num_classes)[labels]
   id_data = id_data.T

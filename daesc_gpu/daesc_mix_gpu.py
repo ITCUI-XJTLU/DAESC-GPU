@@ -704,7 +704,7 @@ def VEM_mix(gene_index, num_iteration,min_iter,ynxid_data,cu_id_data, cu_n_lap,i
 def daesc_mix_gpu(ynidx_data, part =1, num_iteration=50, min_iter=20):  
   ################################################################
   # make one-hot matrix
-  labels = ynx_data_cuomo[-2, :].astype(int)
+  labels = ynidx_data[-2, :].astype(int)
   num_classes = np.max(labels) + 1
   id_data = np.eye(num_classes)[labels]
   id_data = id_data.T
