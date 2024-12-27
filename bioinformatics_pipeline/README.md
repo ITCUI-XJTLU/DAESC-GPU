@@ -1,0 +1,50 @@
+This folder contains all scripts used to get allele-specific read counts from OneK1K data. 
+
+- Alignment: In this folder, we inlcude the scripts used to dowload raw data (.sra files) and align transforma the .sra files to .fastq files. After that, we use cellranger to align the data to the cell ranger reference. 
+
+- Split_and_Combine: In each pool of OneK1K data (one pool include 20 RUNs, 20 .sra files), we can get 20 BAM files for each run. But the BAM files contains the reads from multiple individuals (usually 12 or 14 individuals), we split single BAM from one RUN to multiple smaller BAM files, the smaller BAM files only contain reads from one individuals. After that, we combine the smaller BAM files for the same individuals across all RUNs. 
+
+- SALSA_pipeline: This folder includes the scripts used to get allele-specific counts. Since we have processed 10 pools, it includes all scripts for 10 pools, but each scripts are the same except the pool number. In each "step3_sampleX_slurm.sh" file, it includes the command to create appropriate environment for SALSA pipeline. In each "step3_sampleX.sh" file, it inlcudes commends to run SALSA scripts. The SALSA scripts is put under the folder: /SALSA_pipeline/SALSA_scripts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
