@@ -1,0 +1,10 @@
+Sample11 SRR18029350 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029351 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029352 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029353 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029354 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029355 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029356 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029357 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029358 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
+Sample11 SRR18029359 /projects/gqilab/DAESC_GPU/data/OneK1K_Alldata/mypipeline/cellbarcodes/Sample11_three.csv
