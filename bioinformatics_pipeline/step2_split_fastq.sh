@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # ------------------ 解析命名参数 -------------------
-conda_activate_cmd=""
 root_path=""
 txt_1=""
 barcodes_dir=""
@@ -9,9 +8,6 @@ line_number=""
 
 for ARG in "$@"; do
     case $ARG in
-        conda_activate_cmd=*)
-            conda_activate_cmd="${ARG#*=}"
-            ;;
         root_path=*)
             root_path="${ARG#*=}"
             ;;
@@ -32,20 +28,19 @@ for ARG in "$@"; do
 done
 
 # ------------------ 参数检查 -------------------
-if [[ -z "$conda_activate_cmd" || -z "$root_path" || -z "$txt_1" || -z "$line_number" ]]; then
-    echo "Usage: bash $0 conda_activate_cmd=source*/path/to/conda.sh root_path=... txt_1=... line_number=... [barcodes_dir=...]"
+if [[ -z "$root_path" || -z "$txt_1" || -z "$line_number" ]]; then
+    echo "Usage: bash $0 root_path=... txt_1=... line_number=... [barcodes_dir=...]"
     exit 1
 fi
 
-# ------------------ 激活 Conda 环境 -------------------
-conda_activate_cmd="${conda_activate_cmd//\*/ }"
-eval "$conda_activate_cmd"
-conda activate scASE
+# ------------------ 设置 Conda 环境 PATH -------------------
+export PATH="${root_path}/reference_test/miniconda3/envs/scASE_conda/bin:$PATH"
+echo "🔧 PATH set to use Conda environment in ${root_path}/reference_test/miniconda3/envs/scASE_conda"
 
 # 读取指定行
 line=$(sed -n "${line_number}p" "$txt_1")
 if [[ -z "$line" ]]; then
-    echo "Line $line_number is empty or does not exist in $txt_1"
+    echo "❌ Line $line_number is empty or does not exist in $txt_1"
     exit 1
 fi
 
@@ -72,7 +67,7 @@ awk 'NR%4==1 {srr=$1} NR%4==2 {print srr"\t"$1}' \
 for ind in $individuals; do
     bc_file="${barcodes_dir}/${ind}.csv"
     if [[ ! -f "$bc_file" ]]; then
-        echo "Barcode file not found for individual $ind, skipping."
+        echo "❗ Barcode file not found for individual $ind, skipping."
         continue
     fi
 
@@ -96,5 +91,5 @@ for ind in $individuals; do
     done
 done
 
-echo "✅ finish SRR $srr_id "
+echo "✅ Finished SRR $srr_id"
 

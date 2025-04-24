@@ -1,17 +1,14 @@
 #!/bin/bash
+
 # =============================
-# 👇 参数解析 + 支持 * 表示空格
+# 👇 参数解析
 # =============================
-conda_activate_cmd=""
 root_path=""
 txt_1=""
 line_number=""
 
 for ARG in "$@"; do
     case $ARG in
-        conda_activate_cmd=*)
-            conda_activate_cmd="${ARG#*=}"
-            ;;
         root_path=*)
             root_path="${ARG#*=}"
             ;;
@@ -31,26 +28,24 @@ done
 # =============================
 # 参数检查
 # =============================
-if [[ -z "$conda_activate_cmd" || -z "$root_path" || -z "$txt_1" || -z "$line_number" ]]; then
-    echo "Usage: bash $0 conda_activate_cmd=source*/path/to/conda.sh root_path=... txt_1=... line_number=..."
+if [[ -z "$root_path" || -z "$txt_1" || -z "$line_number" ]]; then
+    echo "Usage: bash $0 root_path=... txt_1=... line_number=..."
     exit 1
 fi
 
 # =============================
-# 👇 将 * 替换为空格后执行激活命令
+# 👇 设置 Conda 环境路径
 # =============================
-conda_activate_cmd="${conda_activate_cmd//\*/ }"
-echo "activate conda by $conda_activate_cmd"
-eval "$conda_activate_cmd"
-conda activate scASE
+export PATH="${root_path}/reference_test/miniconda3/envs/scASE_conda/bin:$PATH"
+echo "🔧 PATH set to use Conda environment in ${root_path}/reference_test/miniconda3/envs/scASE_conda"
 
 # =============================
-# 下载逻辑保持不变
+# 下载逻辑
 # =============================
-echo "start to download"
+echo "📥 Starting download..."
 line=$(sed -n "${line_number}p" "$txt_1")
 if [[ -z "$line" ]]; then
-    echo "Line $line_number is empty or does not exist in $txt_1"
+    echo "❌ Line $line_number is empty or does not exist in $txt_1"
     exit 1
 fi
 
