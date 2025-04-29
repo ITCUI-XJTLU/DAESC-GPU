@@ -1,14 +1,14 @@
-# An End-to-End Bioinformatics Pipeline for Single-cell Allele-specific Expression Analysis with Multiple Individuals
+# An End-to-End Bioinformatics Pipeline for Generating Allele-specific Expression from Multiplexed Single-Cell RNA-seq data
 
 Allele-specific expression (ASE) analysis investigates the differential expression of two alleles of the same gene in diploid organisms. ASE provides critical insights into diverse regulatory mechanisms, including cis-regulatory variation, epigenetic modifications, and nonsense-mediated decay. However, existing bioinformatics pipelines for deriving single-cell ASE counts vary significantly across studies. As a result, researchers often expend considerable time and effort on repetitive and technically complex programming tasks to implement these pipelines. To alleviate—and potentially eliminate—this burden, we propose a highly user-friendly bioinformatics pipeline that automatically processes raw sequencing data from multiple individuals and generates single-cell ASE counts for each individual. With minimal user input, the pipeline performs all necessary steps, streamlining the workflow and significantly reducing the manual workload for researchers.
 
-Our work is based on [SALSA pipline](https://github.com/p4rkerw/SALSA). Thanks for their excellent work. 
+Part of our pipeline is based on [SALSA pipline](https://github.com/p4rkerw/SALSA). Thanks for their excellent work. 
 
 ## Part 1: Overview of the Whole Pipeline
 ### 1.1 Structure of Single-cell Data
-Before discussing the pipeline, we first need to understand the general structure of the data. Due to the extremely large size of single-cell sequencing datasets, it is impractical to store all raw reads (typically saved in .sra files) in a single file. Therefore, researchers usually divide all individuals into smaller groups, each containing multiple individuals—typically 12 to 16. Each such group is referred to as a pool. Within each pool, the same set of individuals may be sampled multiple times. For instance, it is possible that all individuals in Pool 1 are measured across 20 separate experiments, with each experiment referred to as a run.
+Before discussing the pipeline, we first need to understand the general structure of the data. Multiplexing is a technique to sequence multiple samples in a single experimental run, and is commonly used to reduce costs and identify artifacts. The raw reads are typically saved in multiple pools, each of which is comprised of a small number of individuals. Within each pool, the library may be further divided and sequenced in multiple experimental runs.
 
-We use the [OneK1K dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE196830) (GSE196830) as an example. (In this project, we focus exclusively on PBMCs and do not analyze whole blood samples.) This dataset contains a total of 77 pools, each consisting of multiple individuals (12, 14, or 16 per pool). For each pool, data from 20 runs are available.
+We use the [OneK1K dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE196830) (GSE196830) as an example. In this study, single-cell RNA-seq data were collected for peripheral blood mononuclear cells (PBMCs). This dataset contains a total of 77 pools, each consisting of multiple individuals (12, 14, or 16 per pool). For each pool, data from 20 runs are available.
 
 This is the general structure of single-cell sequencing data collected from multiple individuals. Our pipeline is specifically designed to process such data and produce allele-specific read counts for each individual.
 
@@ -17,9 +17,9 @@ This is the general structure of single-cell sequencing data collected from mult
 ### 1.2 Bioinformatics Pipeline
 Our pipeline is built upon the SALSA pipeline, an excellent bioinformatics workflow for scASE analysis. However, our pipeline introduces two key improvements:
 
-1. The original SALSA pipeline is designed for allele-specific expression analysis of a single individual and cannot be directly applied to datasets containing multiple individuals. In contrast, our pipeline is specifically designed for large-scale single-cell datasets with multiple individuals, following the structure described in Section 1.1. The SALSA pipeline is integrated as a core component within our broader framework.
+1. The original SALSA pipeline is designed for allele-specific expression analysis of a single individual and cannot be directly applied to mulitiplexed scRNA-seq samples. In contrast, our pipeline is specifically designed for large-scale single-cell datasets with multiple individuals, following the structure described in Section 1.1. The SALSA pipeline is integrated as a core component within our broader framework.
 
-2. Our pipeline is significantly user-friendly. It offers an accessible, streamlined solution for deriving ASE counts directly from raw RNA sequencing data.
+2. Our pipeline is user-friendly. It offers an accessible, streamlined solution for deriving ASE counts directly from raw RNA sequencing data.
 
 Our pipeline consists of seven main steps. For each step, users only need to customize file paths according to their data and then wait for the process to complete.
 
@@ -46,20 +46,20 @@ Once the preparation is complete, we proceed to the main pipeline in Section 3:
 ## Part 2: Environment and Data Preparation 
 In this document, we will use the [OneK1K dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE196830) (GSE196830) as an example. We will show how to use our pipeline to process the **Pool11** and get the single-cell ASE for three individuals (847_848, 985_986, 997_998). 
 
-You do not need to download any specific packages, which is one of biggest advantage of our pipeline. You can 
+We have combined all dependencies into a single .zip file. Users will not need to go through the time-consuming process of installing individual packages.
 
 ### 2.1 Cell Barcodes 
-Our pipeline is very user-friendly, most of work will be done automatically. People only need to do some work manully. One is work is to downlaod cell barcodes. So what is cell barcodes ? We can first take a look at one example: 
+The first step is to download cell barcodes. So what is a cell barcode? We can first take a look at one example: 
 
 <div align="center">
   <img src="figures/cell_barcodes.png" alt="barcodes" width="200"/>
 </div>
 
-Here is an example of cell barcodes. The first column represents the **individual ID**, and the second column contains a short RNA sequence known as the **cell barcode** . Each individual is associated with multiple barcodes, as high-throughput RNA sequencing platforms (such as the Illumina NovaSeq 6000) typically capture thousands of cells from a single individual.
+The first column represents the **individual ID**, and the second column contains a short RNA sequence known as the **cell barcode** . Each individual is associated with multiple barcodes, as high-throughput RNA sequencing platforms (such as the Illumina NovaSeq 6000) typically capture thousands of cells from a single individual.
 
 In other words, while a single experiment can capture expression profiles from millions of cells, cell barcodes are essential for identifying the individual origin of each cell. This mapping between barcodes and individuals is crucial for enabling downstream allele-specific expression analysis at the single-cell level.
 
-Next question, how can we get cell barcodes ? In this document, you do not need to download it. Because we have prepare it for you under the folder **cellbarcodes** . Now, on your server, create a folder for our project, and run the command to download our example data and all scripts: 
+Next question, how can we get cell barcodes? In this example, you do not need to download it. We have prepare it for you under the folder **cellbarcodes** . Now, on your server, create a folder for our project, and run the command to download our example data and all scripts: 
 
 ```
 wget -O mypipeline.zip "https://zenodo.org/records/15273319/files/mypipeline.zip?download=1"
@@ -72,9 +72,9 @@ In the below, we will finish all process in this folder `/path/to/root/mypipelin
   <img src="figures/root_content.png" alt="root_content" width="700"/>
 </div>
 
-The example cell barcode files are save at the folder `./mypipeline/cellbarcodes`. Under the folder of `mypipeline`, there are all scripts of our pipeline. 
+The example cell barcode files are saved in the folder `./mypipeline/cellbarcodes`. Under the folder of `mypipeline`, there are all scripts of our pipeline. 
 
-**But if you want to study other pools of OneK1K data set or your own data, here we can explain how we get such cell barcodes file**: you can directly download them online. For example, if you want to study Pool11, go to [the GEO websites for OneK1K Pool12](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5899883). Go to the **Supplementary file**, and find the file named `GSM5899883_OneK1K_scRNA_Sample11_Individual_Barcodes.csv.gz`, which is what we want. You need to decompress it by the command: 
+**But if you want to study other pools of OneK1K data set or your own data, here we explain how we get such cell barcodes file**: you can directly download them online. For example, if you want to study Pool11, go to [the GEO websites for OneK1K Pool11](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM5899883). Go to the **Supplementary file** and download the file named `GSM5899883_OneK1K_scRNA_Sample11_Individual_Barcodes.csv.gz`. You need to decompress it by the command: 
 
 ```
 gunzip GSM5899883_OneK1K_scRNA_Sample11_Individual_Barcodes.csv.gz
@@ -103,31 +103,36 @@ nano list_user_input.txt
 # Sample11 SRR18029359 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
 ```
 
-You can also modify the file to use your own data. Here's how to interpret the content: The first column indicates the pool number. In this project, we focus on Pool 11 of the OneK1K dataset, so we set the first column to Sample11. You can also use names like pool11 or number11—any consistent naming convention is fine. The second column specifies the RUN number you want to download. In OneK1K Pool 11, there are 20 RUNs in total. In this example, we only download the first 10. If you want to use this pipeline for your own data, you need to know the SRR number (Sequence Read Archive ID) of your dataset, which can be easily found on the GEO website. The third column is the path to the cell barcode file for the pool. Since each pool has only one associated barcode file, the values in this column are the same across rows.
+You can also modify the file for your own data. The first column indicates the pool number. In this project, we focus on Pool 11 of the OneK1K dataset, so we set the first column to Sample11. You can also use names like pool11 or number11—any consistent naming convention is fine. The second column specifies the RUN number you want to download. In OneK1K Pool 11, there are 20 RUNs in total. In this example, we only downloaded the first 10. If you want to use this pipeline for your own data, you need to know the SRR number (Sequence Read Archive ID) of your dataset, which can be easily found on the GEO website. The third column is the path to the cell barcode file for the pool. Since each pool has only one associated barcode file, the values in this column are the same across rows.
 
-Then we need to split the csv file into several csv files according to different individuals. You do not need to do anything, just run this command. You may need to change the path to your own path: 
+Then we need to split the csv file into several csv files according to different individuals. Run the following command. You may need to change the path to your own path: 
 
 ```
 # 5-10 seconds
-./pipeline4_step0_cellbarcodes.sh list_file=./list_user_input.txt root_path=/home/user/mypipeline
+./step0_cellbarcodes.sh list_file=./list_user_input.txt root_path=/home/user/mypipeline
 ```
 
-The script will also generate two new script under your root path: 
+The script will also generate two new files under your root path: 
 
 ```
-/home/user/mypipeline/list_test_srr.txt
-/home/user/mypipeline/list_test_individuals.txt
+/path/to/mypipeline/list_test_srr.txt
+/path/to/mypipeline/list_test_individuals.txt
 ```
+
+These files will be used in Step 3.2 and 3.3.
 
 ### 2.2 Create Environment
-One of biggest advanatage of our pipeline is that it is very easy to use. You do not need to download and install any packages, which may be very tedious and annoying in most of time. If you use our pipeline, you do not need to worry about this point.We will already prepare all packages and softwares for you in a compressed file. Now, we can tell you how to do that. Please make sure you are at the folder `./mypipeline`; otherwise, use the command `cd ./path/to/mypipeline`. 
+One of biggest advanatage of our pipeline is that it is easy to use. Users do not need to go through the tedious process of downloading and installing individual packages. We have prepared all packages and softwares in a compressed file. Follow the instructions below to access it. 
+
+**First,  make sure you are at the folder `./mypipeline`; otherwise, use the command `cd ./path/to/mypipeline`**. This is step is very important to run the pipeline sucessfully.  
 
 ```
-# it usually take some hours
+# it usually take several hours to download and unzip the files
 wget -O reference_test.tar.gz "https://zenodo.org/records/15252609/files/reference_test.tar.gz?download=1"
 tar -xzvf reference_test.tar.gz
 
 # if you do not want to wait, please use our script so that you can run the command on SLURM
+# The whole process will take about 5 hours to finish. Hope you can wait for it. Because you do not need to do anything to deal with environment but waiting. 
 sbatch \
   --job-name=dl_ref \
   --output=logs/dl_ref_%j.out \
@@ -146,10 +151,10 @@ After you have run this cript, in your folder `/home/user/mypipeline/reference_t
   <img src="figures/reference_dict.png" alt="reference_content" width="600"/>
 </div>
 
-We’ve completed all the preparation steps—super easy, right?
+We’ve completed all the preparation steps.
 
 ## Part 3: Get Multiple Individual ASE Count
-If you have downlaod all necessary packages and prepare barcodes files, it is supper easy to run our script. Our pipeline has 5 steps. 
+If you have download all necessary packages and prepare barcodes files, our scripts can be easily used to generate single-cell ASE counts. Our pipeline has 5 steps. 
 
 ### 3.1 Download .SRA Files
 
@@ -170,6 +175,8 @@ sbatch \
 ```
 
 Here we explain the parameters of the second command:
+
+Required: 
 - job-name: the job name of SLURM 
 - output, error: log file
 - array: how many array you want to use. It depends on the SRR files. For example, if you want to download 10 .sra files, then there are 10 lines in the `list_user_input.txt`, so you need to use 10 array, 1-10
@@ -178,8 +185,11 @@ Here we explain the parameters of the second command:
 - time: the longest runtime of scripts
 - partition: your computing resource 
 - root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
-- txt_1: the path of srr list file. If you run the script `pipeline4_step0_cellbarcodes.sh` before, then this file will automated to be saved to the path `/path/to/mypipeline`
+
+Optional: 
+- txt_1: the path of srr list file `list_user_input.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
 - line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
+
 
 
 ### 3.2 Split FASTQ Files 
@@ -210,13 +220,20 @@ sbatch \
     barcodes_dir=/path/to/mypipeline/cellbarcodes \
     line_number=\${SLURM_ARRAY_TASK_ID}"
 ```
+Required: 
+- job-name: the job name of SLURM 
+- output, error: log file
+- array: how many array you want to use. It depends on the numder of the lines of file `list_user_input.txt`. For example, if your txt file `list_user_input.txt` has 10 lines, you need to use 10 array, 1-10
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- partition: your computing resource 
+- root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
-Since many paramters of sbatch command have been explain, here we only explain the parameteres of the script `step1_split_fastq.sh`: 
-
-- root_path: your working dictionary. In this project, because we want to save all data in the path `/path/to/mypipeline`, so we set `root_path=/path/to/mypipeline`
-- txt_1: the path of srr list file. If you run the script `step0_cellbarcodes.sh` before, then this file will automated to be saved to the path `/path/to/mypipeline`
-- barcodes: the paths of cellbarcodes. See the command of the script `step0_cellbarcodes.sh`
-- line_number: if you use SLURM, you do not need to change this. 
+Optional: 
+- txt_1: the path of srr list file `list_test_srr.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- barcodes_dir: the path of the cell barcode files. This folder is assumed to be under the path `/path/to/mypipeline/cellbarcodes` if you follow my instruction in the section 2.1  
+- line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
 ### 3.3 Recombine FASTQ Files 
 In this section, we need to recombine FASTQ files from the same individuals but different RUNs. 
@@ -234,11 +251,19 @@ sbatch --job-name=mergefq \
        individual_list=/path/to/mypipeline/list_test_individuals.txt \
        line_number=\${SLURM_ARRAY_TASK_ID}"
 ```
-We explains parameters of the script: 
-- root_path: your working dictionary. In this project, because we want to save all data in the path `/path/to/mypipeline`, so we set `root_path=/path/to/mypipeline`
-- individual_list: the path of individual list file. If you run the script `step0_cellbarcodes.sh` before, then this file will automated to be saved to the path `/path/to/mypipeline`
-- line_number: if you use SLURM, you do not need to change this. 
-- array: this parameter is a little tricky, so I explain it again. This parameter specify how many array you want to create, because our script process one individual at one time, and use parallel computing to reduce time. You should compute the number of rows in the file `/path/to/mypipeline/list_test_individuals.txt` and set array to the numder of rows. 
+Required: 
+- job-name: the job name of SLURM 
+- output, error: log file
+- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- partition: your computing resource 
+- root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
+
+Optional: 
+- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
 ### 3.4 Cellranger 
 In this section, we use Cellranger to alignment FASTQ files to cellranger reference: 
@@ -258,10 +283,19 @@ sbatch \
     individual_list=/path/to/mypipeline/list_test_individuals.txt \
     line_number=\${SLURM_ARRAY_TASK_ID}"
 ```
-Here we explain some important parameters: 
+Required: 
+- job-name: the job name of SLURM 
+- output, error: log file
+- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- partition: your computing resource 
+- root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
-- array: set this to be the number of the rows of the file `/path/to/mypipeline/list_test_individuals.txt`
-
+Optional: 
+- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
 ### 3.5 scASE counts
 ```
@@ -280,7 +314,29 @@ sbatch \
     input_list=/path/to/mypipeline/list_test_individuals.txt
 ```
 
-Here I want to highlight one point: if you want to run this pipeline, you should assign enough memory for the task. For example, if you want to process the example data (OneK1K data), you need at least assign 200GB memory for each of script. 
+Required: 
+- job-name: the job name of SLURM 
+- output, error: log file
+- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task. Since SALSA pipeline need large memory to process the data, we recommend you assign at least **200 GB** for each task
+- time: the longest runtime of scripts. This step will take about multiple hours to process one individuals across all chromosomes. 
+- partition: your computing resource 
+- root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
+
+Optional: 
+- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
