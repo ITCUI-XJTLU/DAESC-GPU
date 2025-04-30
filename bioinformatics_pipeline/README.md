@@ -83,34 +83,38 @@ gunzip GSM5899883_OneK1K_scRNA_Sample11_Individual_Barcodes.csv.gz
 mv GSM5899883_OneK1K_scRNA_Sample11_Individual_Barcodes.csv Sample11_three.csv 
 ```
 
-You can repeat the same steps for other pools. Similarly, you can use this approach to download cell barcodes from other datasets. But **remember**: You only need to download cell barcodes once per pool, since the set of individuals remains the same across different runs within the same pool. Upload the downloaded file to the folder: `/home/user/mypipeline/cellbarcodes` . So you can find the csv file at the path: `/home/user/mypipeline/cellbarcodes/Sample11_three.csv` . 
+You can repeat the same steps for other pools. Similarly, you can use this approach to download cell barcodes from other datasets. But **remember**: You only need to download cell barcodes once per pool, since the set of individuals remains the same across different runs within the same pool. Upload the downloaded file to the folder: `/path/to/mypipeline/cellbarcodes` . So you can find the csv file at the path: `/path/to/mypipeline/cellbarcodes/Sample11_three.csv` . 
 
-Now, you need to create a `list_user_input.txt` file under the assumed root path `/home/user/mypipeline/` by the commnad below,and copy the content.  
+Now, you need to create a `list_user_input.txt` file under the assumed root path `/path/to/mypipeline/` by the commnad below,and copy the content.  
 
 ```
 nano list_user_input.txt
 
 # the content of list_user_input.txt
-# Sample11 SRR18029350 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029351 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029352 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029353 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029354 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029355 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029356 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029357 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029358 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
-# Sample11 SRR18029359 /home/user/mypipeline/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029350 /path/to/mypipeline/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029351 /path/to/mypipeline/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029352 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029353 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029354 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029355 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029356 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029357 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029358 /home/path/to/cellbarcodes/Sample11_three.csv
+# Sample11 SRR18029359 /home/path/to/cellbarcodes/Sample11_three.csv
 ```
 
-You can also modify the file for your own data. The first column indicates the pool number. In this project, we focus on Pool 11 of the OneK1K dataset, so we set the first column to Sample11. You can also use names like pool11 or number11—any consistent naming convention is fine. The second column specifies the RUN number you want to download. In OneK1K Pool 11, there are 20 RUNs in total. In this example, we only downloaded the first 10. If you want to use this pipeline for your own data, you need to know the SRR number (Sequence Read Archive ID) of your dataset, which can be easily found on the GEO website. The third column is the path to the cell barcode file for the pool. Since each pool has only one associated barcode file, the values in this column are the same across rows.
+You can also modify the file for your own data. The first column indicates the pool number. In this project, we focus on Pool 11 of the OneK1K dataset, so we set the first column to Sample11. You can also use names like pool11 or number11—any consistent naming convention is fine. If you want to study more than one pool, we can just wirte some line as Sample11 and other lines as Sample12. It depends on your data, the first column could have different values. The second column specifies the RUN number you want to download. In OneK1K Pool 11, there are 20 RUNs in total. In this example, we only downloaded the first 10. If you want to use this pipeline for your own data, you need to know the SRR number (Sequence Read Archive ID) of your dataset, which can be easily found on the GEO website. The third column is the path to the cell barcode file for the pool. Since each pool has only one associated barcode file, the values in this column are the same across rows.
 
-Then we need to split the csv file into several csv files according to different individuals. Run the following command. You may need to change the path to your own path: 
+Then we need to split the csv file into several csv files according to different individuals. Specifically, in your folder `/path/to/mypipeline/cellbarcodes`, you have the cell barcodes file `Sample11_three.csv` which includes the cell barcodes of all individuals. We will use the below command to split this one file into multiple files with each splited file including one single indiviudal's cell barcodes. Run the following command, and there will be multiple new csv files in your folder `/path/to/mypipeline/cellbarcodes`. You may need to change the path to your own path: 
 
 ```
 # 5-10 seconds
 ./step0_cellbarcodes.sh list_file=./list_user_input.txt root_path=/home/user/mypipeline
 ```
+You can take a look at the results (the figure below). Previously, we only have one csv file `Sample11_three.csv`, but now we get new files for each indiviudal: `847848.csv`, `985986.csv` ...
+<div align="center">
+  <img src="figures/dict_cellbarcodes.png" alt="cellbarcodes_content" width="700"/>
+</div>
 
 The script will also generate two new files under your root path: 
 
@@ -119,7 +123,21 @@ The script will also generate two new files under your root path:
 /path/to/mypipeline/list_test_individuals.txt
 ```
 
-These files will be used in Step 3.2 and 3.3.
+These files will be used in Step 3.2 and 3.3. The two files are generated based on the previous file `list_user_input.txt`, which has three columns: Sample name, SRR number, and the path cell barcode file. Based on this file, we can generate another file `list_test_srr.txt`. Please take a lood at the txt file: 
+
+<div align="center">
+  <img src="figures/txt_srr.png" alt="txtsrr_content" width="400"/>
+</div>
+
+The fisrt two columns of `list_test_srr.txt` is the same as the first two coluns of `list_user_input.txt`. The third column of `list_test_srr.txt` is different, it is the individuals included in the data. For example, in the `SRR18029350` run, it includes 12 individuals' data. But at this time, we only want to study three individuals' data, so we set the third column as `(847848 985986 997998)`. Since we want to only these three individuals across all ten RUNs, the third columns are the same across all rows. When you analyze your own data and you provide your cell barcode file (Sample11_three.csv in this case), the script will automatically analyze all individual by default. 
+
+We can also take a look at the file `list_test_individuals.txt`: 
+<div align="center">
+  <img src="figures/txt_individual.png" alt="txtind_content" width="600"/>
+</div>
+
+`list_test_individuals.txt` include two columns, the first column is the individuals, and the second columns are the chromosome. For example, for individual `847848`, we want to analyze its chromosome `3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22`. By default, the script will automotically think you need to analyze chromosome 1 to chromosome 22. 
+
 
 ### 2.2 Create Environment
 One of biggest advanatage of our pipeline is that it is easy to use. Users do not need to go through the tedious process of downloading and installing individual packages. We have prepared all packages and softwares in a compressed file. Follow the instructions below to access it. 
@@ -133,6 +151,7 @@ tar -xzvf reference_test.tar.gz
 
 # if you do not want to wait, please use our script so that you can run the command on SLURM
 # The whole process will take about 5 hours to finish. Hope you can wait for it. Because you do not need to do anything to deal with environment but waiting. 
+# the script may not need 100 GB memory to run. But we recommend you to use a large memory, because the compressed file is above 30 GB. 
 sbatch \
   --job-name=dl_ref \
   --output=logs/dl_ref_%j.out \
@@ -145,7 +164,7 @@ sbatch \
   --wrap="bash step0_download_reference.sh"
 ```
 
-After you have run this cript, in your folder `/home/user/mypipeline/reference_test`, the content may looks like: 
+After you have run this cript, in your folder `/path/to/mypipeline/reference_test`, the content may looks like: 
 
 <div align="center">
   <img src="figures/reference_dict.png" alt="reference_content" width="600"/>
@@ -177,16 +196,16 @@ sbatch \
 Here we explain the parameters of the second command:
 
 Required: 
-- job-name: the job name of SLURM 
-- output, error: log file
-- array: how many array you want to use. It depends on the SRR files. For example, if you want to download 10 .sra files, then there are 10 lines in the `list_user_input.txt`, so you need to use 10 array, 1-10
-- cpus-per-task: the number of CPUs for each task
-- mem: the number of memory per task 
-- time: the longest runtime of scripts
+- array: how many array you want to use. It depends on the SRR files. For example, if you want to download 10 .sra files, then there are 10 lines in the `list_user_input.txt`, so you need to use 10 array, 1-10. One of easy way is to compute the number of lines of `list_user_input.txt`
 - partition: your computing resource 
 - root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
 Optional: 
+- job-name: the job name of SLURM 
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- output, error: log file
 - txt_1: the path of srr list file `list_user_input.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
 - line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
@@ -196,14 +215,6 @@ Optional:
 In this section, we need to split FASTQ files into smaller parts according to different individuals. Because the FASTQ file from one run inlcude multiple individuals' reads. 
 
 ```
-# If you want to run this script in an interactive interface
-bash pipeline4_step1_split_fastq.sh \
-  conda_activate_cmd=source*/home/user/mypipeline/miniconda3/etc/profile.d/conda.sh \
-  root_path=/home/user/mypipeline \
-  txt_1=/home/user/mypipeline/list_test_srr.txt \
-  barcodes_dir=/home/user/mypipeline/cellbarcodes \
-  line_number=1
-
 # if you want to run it on SLURM
 sbatch \
   --job-name=split_fastq \
@@ -216,23 +227,23 @@ sbatch \
   --partition=your_partition \
   --wrap="bash pipeline4_step1_split_fastq.sh \
     root_path=/path/to/mypipeline \
-    txt_1=/path/to/mypipeline/list_test_srr.txt \
-    barcodes_dir=/path/to/mypipeline/cellbarcodes \
+    txt_1=./list_test_srr.txt \
+    barcodes_dir=./cellbarcodes \
     line_number=\${SLURM_ARRAY_TASK_ID}"
 ```
 Required: 
-- job-name: the job name of SLURM 
-- output, error: log file
-- array: how many array you want to use. It depends on the numder of the lines of file `list_user_input.txt`. For example, if your txt file `list_user_input.txt` has 10 lines, you need to use 10 array, 1-10
-- cpus-per-task: the number of CPUs for each task
-- mem: the number of memory per task 
-- time: the longest runtime of scripts
+- array: how many array you want to use. It depends on the numder of the lines of file `list_user_input.txt`. For example, if your txt file `list_user_input.txt` has 10 lines, you need to use 10 array, 1-10. One of easy way is to compute the number of lines of `list_user_input.txt`
 - partition: your computing resource 
 - root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
 Optional: 
-- txt_1: the path of srr list file `list_test_srr.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
-- barcodes_dir: the path of the cell barcode files. This folder is assumed to be under the path `/path/to/mypipeline/cellbarcodes` if you follow my instruction in the section 2.1  
+- job-name: the job name of SLURM 
+- output, error: log file
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- txt_1: the path of srr list file `list_test_srr.txt`. If you run the script `step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- barcodes_dir: the path of the cell barcode files. This folder is assumed to be under the path `/path/to/mypipeline/cellbarcodes` if you follow my instruction in the section 2.1. So if your current path is under `/path/to/mypipeline/`, you do not need to change this parameter. 
 - line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
 ### 3.3 Recombine FASTQ Files 
@@ -248,21 +259,21 @@ sbatch --job-name=mergefq \
        --output=logs/mergefq_%A_%a.log \
        --error=logs/mergefq_%A_%a.log \
        --wrap="bash step3_recombine_fastq.sh root_path=/path/to/mypipeline \
-       individual_list=/path/to/mypipeline/list_test_individuals.txt \
+       individual_list=./mypipeline/list_test_individuals.txt \
        line_number=\${SLURM_ARRAY_TASK_ID}"
 ```
 Required: 
-- job-name: the job name of SLURM 
-- output, error: log file
-- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10
-- cpus-per-task: the number of CPUs for each task
-- mem: the number of memory per task 
-- time: the longest runtime of scripts
+- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10. One of easy way is to calculate the numder of lines of `list_test_individuals.txt`
 - partition: your computing resource 
 - root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
 Optional: 
-- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- job-name: the job name of SLURM 
+- output, error: log file
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
 - line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
 ### 3.4 Cellranger 
@@ -280,27 +291,27 @@ sbatch \
   --error=logs/cellranger_%A_%a.log \
   --wrap="bash step4_cellranger.sh \
     root_path=/path/to/mypipeline \
-    individual_list=/path/to/mypipeline/list_test_individuals.txt \
+    individual_list=./list_test_individuals.txt \
     line_number=\${SLURM_ARRAY_TASK_ID}"
 ```
 Required: 
-- job-name: the job name of SLURM 
-- output, error: log file
-- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10
-- cpus-per-task: the number of CPUs for each task
-- mem: the number of memory per task 
-- time: the longest runtime of scripts
+- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10. One of easy way is to compute the number of the lines of `list_test_individuals.txt`
 - partition: your computing resource 
 - root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
 Optional: 
-- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- job-name: the job name of SLURM 
+- output, error: log file
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task 
+- time: the longest runtime of scripts
+- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
 - line_number: if you use SLURM, you do not need to change this. If you use an interactive interface, then this number choose which SRR file you want to download by this script. For example, if line_number=1, then the script will automatically download the .sra file in your first line of `list_user_input.txt`. 
 
 ### 3.5 scASE counts
 ```
 sbatch \
-  --array=0-1 \
+  --array=1-3 \
   --job-name=pipeline4_array \
   --output=./logs/pipeline4_array_%A_%a.log \
   --error=./logs/pipeline4_array_%A_%a.log \
@@ -315,17 +326,17 @@ sbatch \
 ```
 
 Required: 
-- job-name: the job name of SLURM 
-- output, error: log file
-- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10
-- cpus-per-task: the number of CPUs for each task
-- mem: the number of memory per task. Since SALSA pipeline need large memory to process the data, we recommend you assign at least **200 GB** for each task
-- time: the longest runtime of scripts. This step will take about multiple hours to process one individuals across all chromosomes. 
+- array: how many array you want to use. It depends on the numder of the lines of file `list_test_individuals.txt`. For example, if your txt file `list_test_individuals.txt` has 10 lines, you need to use 10 array, 1-10. One of easy one is to cumpute the number of lines of `list_test_individuals.txt`
 - partition: your computing resource 
 - root_path: your working dictionary. In this document, at first, we assume we want to save all data and results under the path: `/path/to/mypipeline/`
 
 Optional: 
-- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `pipeline4_step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
+- job-name: the job name of SLURM 
+- output, error: log file
+- cpus-per-task: the number of CPUs for each task
+- mem: the number of memory per task. Since SALSA pipeline need large memory to process the data, we recommend you assign at least **200 GB** for each task; otherwise, you will highly possibly fail at this step. 
+- time: the longest runtime of scripts. This step will take about multiple hours to process one individuals across all chromosomes. 
+- individual_list: the path of srr list file `list_test_individuals.txt`. If you run the script `step0_cellbarcodes.sh` before and your current path is under `/path/to/mypipeline/`, then this file will automated to be saved to the path `/path/to/mypipeline`, you do not need to change this parameter. 
 
 
 
