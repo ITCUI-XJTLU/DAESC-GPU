@@ -187,7 +187,7 @@ sbatch \
   --mem=8G \
   --time=05:00:00 \
   --partition=your_partition \
-  --wrap="bash pipeline4_step0_download.sh \
+  --wrap="bash step1_download.sh \
     root_path=/path/to/mypipeline \
     txt_1=./list_user_input.txt \
     line_number=\${SLURM_ARRAY_TASK_ID}"
@@ -225,7 +225,7 @@ sbatch \
   --mem=16G \
   --time=02:00:00 \
   --partition=your_partition \
-  --wrap="bash pipeline4_step1_split_fastq.sh \
+  --wrap="bash step2_split_fastq.sh \
     root_path=/path/to/mypipeline \
     txt_1=./list_test_srr.txt \
     barcodes_dir=./cellbarcodes \
