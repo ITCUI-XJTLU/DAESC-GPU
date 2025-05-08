@@ -25,9 +25,9 @@ Our pipeline consists of seven main steps. For each step, users only need to cus
 
 In Section 2, we describe the required preparation:
 
-- In Section 2.1, we prepare cell barcodes for each individual.
+- In Section 2.1, we download the all required softwares and packages.
 
-- In Section 2.2, we download the all required softwares and packages.
+- In Section 2.2, we prepare cell barcodes for each individual.
 
 Once the preparation is complete, we proceed to the main pipeline in Section 3:
 
@@ -48,7 +48,42 @@ In this document, we will use the [OneK1K dataset](https://www.ncbi.nlm.nih.gov/
 
 We have combined all dependencies into a single .zip file. Users will not need to go through the time-consuming process of installing individual packages.
 
-### 2.1 Cell Barcodes 
+
+### 2.1 Create Environment
+One of biggest advanatage of our pipeline is that it is easy to use. Users do not need to go through the tedious process of downloading and installing individual packages. We have prepared all packages and softwares in a compressed file. Follow the instructions below to access it. 
+
+First, create a folder on your server to save the environment and the following scASE data. Your server should have enough memory. 
+
+```
+# it usually take several hours to download and unzip the files
+wget -O reference_test.tar.gz "https://zenodo.org/records/15361243/files/mypipeline_2.tar.gz?download=1"
+
+tar -xzvf reference_test.tar.gz
+
+# if you do not want to wait, please use our script so that you can run the command on SLURM
+# The whole process will take about 5 hours to finish. Hope you can wait for it. Because you do not need to do anything to deal with environment but waiting. 
+# the script may not need 100 GB memory to run. But we recommend you to use a large memory, because the compressed file is above 30 GB. 
+sbatch \
+  --job-name=dl_ref \
+  --output=logs/dl_ref_%j.out \
+  --error=logs/dl_ref_%j.out \
+  --partition=your_partition \
+  --ntasks=1 \
+  --cpus-per-task=1 \
+  --mem=100G \
+  --time=10:00:00 \
+  --wrap="bash step0_download_reference.sh"
+```
+
+After you have run this cript, in your folder `/path/to/mypipeline/reference_test`, the content may looks like: 
+
+<div align="center">
+  <img src="figures/reference_dict.png" alt="reference_content" width="600"/>
+</div>
+
+We’ve completed all the preparation steps. Before we turn to next section, I want to hightlight that: **In the below, make sure your currenr path is**: `/path/to/mypipeline`; Otherwise, use the command `cd /path/to/mypipeline`. Our pipeline does not require effort on the environments, but it assume some defaul setting in the folder. If you do not under the same path or change the name of some important folder, there might be some problems.
+
+### 2.2 Cell Barcodes 
 The first step is to download cell barcodes. So what is a cell barcode? We can first take a look at one example: 
 
 <div align="center">
@@ -59,12 +94,7 @@ The first column represents the **individual ID**, and the second column contain
 
 In other words, while a single experiment can capture expression profiles from millions of cells, cell barcodes are essential for identifying the individual origin of each cell. This mapping between barcodes and individuals is crucial for enabling downstream allele-specific expression analysis at the single-cell level.
 
-Next question, how can we get cell barcodes? In this example, you do not need to download it. We have prepare it for you under the folder **cellbarcodes** . Now, on your server, create a folder for our project, and run the command to download our example data and all scripts: 
-
-```
-wget -O mypipeline.zip "https://zenodo.org/records/15273319/files/mypipeline.zip?download=1"
-unzip mypipeline.zip
-```
+Next question, how can we get cell barcodes? In this example, you do not need to download it. We have prepare it for you under the folder **cellbarcodes** .
 
 In the below, we will finish all process in this folder `/path/to/root/mypipeline`.  We can take a look at the contents of this folder: 
 
@@ -137,40 +167,6 @@ We can also take a look at the file `list_test_individuals.txt`:
 </div>
 
 `list_test_individuals.txt` include two columns, the first column is the individuals, and the second columns are the chromosome. For example, for individual `847848`, we want to analyze its chromosome `3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22`. By default, the script will automotically think you need to analyze chromosome 1 to chromosome 22. 
-
-
-### 2.2 Create Environment
-One of biggest advanatage of our pipeline is that it is easy to use. Users do not need to go through the tedious process of downloading and installing individual packages. We have prepared all packages and softwares in a compressed file. Follow the instructions below to access it. 
-
-**First,  make sure you are at the folder `./mypipeline`; otherwise, use the command `cd ./path/to/mypipeline`**. This is step is very important to run the pipeline sucessfully.  
-
-```
-# it usually take several hours to download and unzip the files
-wget -O reference_test.tar.gz "https://zenodo.org/records/15252609/files/reference_test.tar.gz?download=1"
-tar -xzvf reference_test.tar.gz
-
-# if you do not want to wait, please use our script so that you can run the command on SLURM
-# The whole process will take about 5 hours to finish. Hope you can wait for it. Because you do not need to do anything to deal with environment but waiting. 
-# the script may not need 100 GB memory to run. But we recommend you to use a large memory, because the compressed file is above 30 GB. 
-sbatch \
-  --job-name=dl_ref \
-  --output=logs/dl_ref_%j.out \
-  --error=logs/dl_ref_%j.out \
-  --partition=your_partition \
-  --ntasks=1 \
-  --cpus-per-task=1 \
-  --mem=100G \
-  --time=10:00:00 \
-  --wrap="bash step0_download_reference.sh"
-```
-
-After you have run this cript, in your folder `/path/to/mypipeline/reference_test`, the content may looks like: 
-
-<div align="center">
-  <img src="figures/reference_dict.png" alt="reference_content" width="600"/>
-</div>
-
-We’ve completed all the preparation steps.
 
 ## Part 3: Get Multiple Individual ASE Count
 If you have download all necessary packages and prepare barcodes files, our scripts can be easily used to generate single-cell ASE counts. Our pipeline has 5 steps. 
