@@ -403,7 +403,7 @@ def lbfgs_mul_mix(fun, x0, max_optim, max_line, step_factor=0.55, sigma=0.4, *ar
 
     k += 1
     x0 = x
-    return val_new, x
+  return val_new, x
 
 def cu_q_mix(param, cu_wt_q, cu_x_q, cu_y_q, cu_n_q, cu_zmat_q, cu_ghq_weights_q, cu_randint_q, cu_randint_prec_q, cu_id_data_q,
               cu_num_genes_q, cu_iteration):
@@ -494,7 +494,7 @@ def cu_q_mix(param, cu_wt_q, cu_x_q, cu_y_q, cu_n_q, cu_zmat_q, cu_ghq_weights_q
       cu_beta2_chunk2[:,i] = cu_beta2 * cu_ghq_weights_q[:,i]
       del cu_beta2
 
-    cu_q = (cp.sum(cu_beta2_chunk1, axis=1) + cp.sum(cu_beta2_chunk2,axis=1))
+    cu_q = 0 - (cp.sum(cu_beta2_chunk1, axis=1) + cp.sum(cu_beta2_chunk2,axis=1))
 
     # compute the derivative of \beta0 and \beta1 on phase 2
     cu_b_chunk = cp.zeros((cu_num_genes_q, cu_x_q.shape[2],3))
