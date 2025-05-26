@@ -665,8 +665,7 @@ def cu_vem_mix(cu_b_phi, cu_sigm2, cu_p, cu_x, cu_randint, cu_randint_prec, cu_i
   q_func, bphi = lbfgs_mul_mix(cu_q_mix,cu_b_phi,
                                max_optim=max_optim, max_line=max_line, step_factor=0.55, sigma=0.4,
                                cu_wt_q= cu_wt, cu_x_q=cu_x, cu_y_q=cu_y, cu_n_q=cu_n, cu_zmat_q=cu_zmat, cu_ghq_weights_q=cu_ghq_weights,
-                               cu_randint_q=cu_randint_vector, cu_randint_prec_q=cu_precision_vector, cu_id_data_q=cu_id_data, cu_num_genes_q=cu_num_genes, cu_iteration=cu_iteration,
-                               max_optim=max_optim, max_line=max_line) # 15 param
+                               cu_randint_q=cu_randint_vector, cu_randint_prec_q=cu_precision_vector, cu_id_data_q=cu_id_data, cu_num_genes_q=cu_num_genes, cu_iteration=cu_iteration) # 15 param
   cu_b_phi = cp.asarray((bphi)) # record the new parameters
   cu_b_phi = cu_b_phi.astype(cp.float32)
 
