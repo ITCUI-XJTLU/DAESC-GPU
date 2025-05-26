@@ -294,7 +294,7 @@ m_step3_bb = cp.ElementwiseKernel(
 
 
 
-def lbfgs_mul_bb(fun, x0, maxk=20, step_factor=0.55, sigma=0.4, *args, **kwargs):
+def lbfgs_mul_bb(fun, x0, max_optim, max_line, step_factor=0.55, sigma=0.4, *args, **kwargs):
   '''
   # Tengfei's Optimizer
   # This optimizer is actually the BFGS algorithm. I rewrite the algorithm in in Cupy and extend the algothrm to 
@@ -323,7 +323,7 @@ def lbfgs_mul_bb(fun, x0, maxk=20, step_factor=0.55, sigma=0.4, *args, **kwargs)
   dk = -cp.sum(H0 * gk, axis=2)  # initial direction
 
   # Start BFGS iteration
-  while k <= maxk:
+  while k <= max_optim:
 
     # We first need to determine the step length
     step_find = cp.zeros((num_q))
@@ -333,7 +333,7 @@ def lbfgs_mul_bb(fun, x0, maxk=20, step_factor=0.55, sigma=0.4, *args, **kwargs)
     oldf, old_grad = val, gk
 
     # Line Search 
-    while line_iter < 15: # we use 15 iterations to determine the step length
+    while line_iter < max_line: # we use max_line iterations to determine the step length
       newf, new_grad = fun((x0 + step_length * dk).astype(cp.float32), *args, **kwargs)
       addtion_diff = sigma * step_length * cp.sum(gk * dk, axis=1, keepdims=True)
       addtion_diff = addtion_diff.reshape(-1)  
@@ -493,7 +493,8 @@ def cu_compute_randint_deriv_bb(cu_linpred, cu_e_randint, cu_id_data, cu_e_y, cu
     cu_v =  cp.concatenate((cu_v1,cu_v2),axis=0)
   return cu_v.astype(cp.float32) 
 
-def cu_vem_bb(cu_b_phi, cu_sigm2, cu_x, cu_randint, cu_randint_prec, cu_id_data, cu_y, cu_n, cu_ghq_weights, cu_ghq_nodes, cu_n_lap, cu_num_genes, cu_iteration, null):
+def cu_vem_bb(cu_b_phi, cu_sigm2, cu_x, cu_randint, cu_randint_prec, cu_id_data, cu_y, cu_n, cu_ghq_weights, cu_ghq_nodes, cu_n_lap, cu_num_genes, cu_iteration, null,
+              max_optim, max_line):
   # Get currenr parameters b0, b1, phi)
   cu_b = cu_b_phi[:, :-1]
   cu_b = cu_b.reshape(cu_b.shape[0], 1, cu_b.shape[1]) # shape[num_genes,1,2]
@@ -526,7 +527,7 @@ def cu_vem_bb(cu_b_phi, cu_sigm2, cu_x, cu_randint, cu_randint_prec, cu_id_data,
   cu_precision_vector = cu_precision_vector.astype(cp.float32)
 
 
-  q_func, bphi = lbfgs_mul_bb(cu_q_bb,cu_b_phi, maxk=10, step_factor=0.55, sigma=0.4,
+  q_func, bphi = lbfgs_mul_bb(cu_q_bb,cu_b_phi, max_optim=max_optim, max_line=max_line, step_factor=0.55, sigma=0.4,
                                cu_x_q=cu_x, cu_y_q=cu_y, cu_n_q=cu_n, cu_zmat_q=cu_zmat, cu_ghq_weights_q=cu_ghq_weights,
                                cu_randint_q=cu_randint_vector, cu_randint_prec_q=cu_precision_vector, cu_num_genes_q=cu_num_genes)
   cu_b_phi = cp.asarray((bphi))
@@ -538,7 +539,8 @@ def cu_vem_bb(cu_b_phi, cu_sigm2, cu_x, cu_randint, cu_randint_prec, cu_id_data,
   # print(f"llkl: {llkl}")
   return cu_b_phi, cu_sigm2, llkl, cu_randint, cu_randint_prec   # return all results
 
-def VEM_bb(gene_index, num_iteration, min_iter, ynxid_data, cu_id_data, cu_n_lap, initial_param, null, cum_time):
+def VEM_bb(gene_index, num_iteration, min_iter, ynxid_data, cu_id_data, cu_n_lap, initial_param, null, cum_time,
+           max_optim, max_line):
   '''
   # gene_index: the index of gene you want to analyze by DAESC-GPU
   # num_iteration: the maximum number of EM iteration
@@ -612,7 +614,8 @@ def VEM_bb(gene_index, num_iteration, min_iter, ynxid_data, cu_id_data, cu_n_lap
       # Start one EM iteration for unfitted data
       cu_param, cu_sigm2, llkl, cu_randint, cu_randint_prec  = cu_vem_bb(cu_param, cu_sigm2,
                                         cu_x, cu_randint, cu_randint_prec, cu_id_data, cu_y, cu_n,
-                                        cu_ghq_weights, cu_ghq_nodes, cu_n_lap, len(gene_index),i, null)
+                                        cu_ghq_weights, cu_ghq_nodes, cu_n_lap, len(gene_index),i, null,
+                                        max_optim=max_optim, max_line=max_line)
 
       # Record results (updated parameters and llkl)
       # select which genes have already fitted very well
@@ -642,7 +645,8 @@ def VEM_bb(gene_index, num_iteration, min_iter, ynxid_data, cu_id_data, cu_n_lap
 
 
 def daesc_bb_gpu(ynidx_data,
-                 part =1, num_iteration=50, min_iter=20):  
+                 part =1, num_iteration=50, min_iter=20,
+                 max_optim=10, max_line=15):  
   ################################################################
   # make one-hot matrix
   labels = ynidx_data[-2, :].astype(int)
@@ -707,7 +711,8 @@ def daesc_bb_gpu(ynidx_data,
     print("First, under H1 model: ")
     my_param_result, my_sigm2_result, my_llkl_record_dict, cum_time = VEM_bb(
         part, num_iteration=num_iteration,min_iter=min_iter, ynxid_data=ynidx_data, cu_id_data=cu_id_data,
-        cu_n_lap=2, initial_param=initial_bb_param, null=False, cum_time=cum_time)
+        cu_n_lap=2, initial_param=initial_bb_param, null=False, cum_time=cum_time,
+        max_optim=max_optim, max_line=max_line)
 
     # record results
     my_param_result = my_param_result.get()
@@ -719,7 +724,8 @@ def daesc_bb_gpu(ynidx_data,
     print("Second, under H0 model: ")
     my_param_null, my_sigm2_null, my_llkl_null_dict, cum_time = VEM_bb(
         part, num_iteration=num_iteration,min_iter=min_iter, ynxid_data=ynidx_data, cu_id_data=cu_id_data,
-        cu_n_lap=2, initial_param=initial_bb_param, null=True, cum_time=cum_time)
+        cu_n_lap=2, initial_param=initial_bb_param, null=True, cum_time=cum_time,
+        max_optim=max_optim, max_line=max_line)
 
     # record results under H0
     my_param_null = my_param_null.get()

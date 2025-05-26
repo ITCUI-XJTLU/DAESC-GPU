@@ -318,7 +318,7 @@ mul3_mix = cp.ElementwiseKernel(
 )
 
 
-def lbfgs_mul_mix(fun, x0, maxk=20, step_factor=0.55, sigma=0.4, *args, **kwargs):
+def lbfgs_mul_mix(fun, x0, max_optim, max_line, step_factor=0.55, sigma=0.4, *args, **kwargs):
   '''
   # Tengfei's Optimizer
   # This optimizer is actually the BFGS algorithm. I rewrite the algorithm in in Cupy and extend the algothrm to 
@@ -346,7 +346,7 @@ def lbfgs_mul_mix(fun, x0, maxk=20, step_factor=0.55, sigma=0.4, *args, **kwargs
   gk = gk.reshape(gk.shape[0], 1, gk.shape[1])  # get initial gradients
   dk = -cp.sum(H0 * gk, axis=2)  # get initial direction
 
-  while k <= maxk:
+  while k <= max_optim:
 
     # Line search
     step_find = cp.zeros((num_q))
@@ -354,7 +354,7 @@ def lbfgs_mul_mix(fun, x0, maxk=20, step_factor=0.55, sigma=0.4, *args, **kwargs
     val, gk = fun(x0, *args, **kwargs)
     line_iter = 0
     oldf, old_grad = val, gk
-    while line_iter < 15: # we allow the mixmum number of iteration for line search is 15
+    while line_iter < max_line: # we allow the mixmum number of iteration for line search is 15
       newf, new_grad = fun((x0 + step_length * dk).astype(cp.float32), *args, **kwargs)
       addtion_diff = sigma * step_length * cp.sum(gk * dk, axis=1, keepdims=True)
       addtion_diff = addtion_diff.reshape(-1)  # 为了让 addtion_diff 的形状为 [num_q]，和 newf，oldf 匹配
@@ -608,7 +608,8 @@ def cu_compute_randint_deriv_mix(cu_linpred, cu_e_randint, cu_id_data, cu_e_y, c
 
 
 def cu_vem_mix(cu_b_phi, cu_sigm2, cu_p, cu_x, cu_randint, cu_randint_prec, cu_id_data,
-           cu_y, cu_n, cu_ghq_weights, cu_ghq_nodes, cu_n_lap, cu_num_genes,cu_iteration, null):
+           cu_y, cu_n, cu_ghq_weights, cu_ghq_nodes, cu_n_lap, cu_num_genes,cu_iteration, null,
+           max_optim, max_line):
   # prepare the parameters
   cu_b = cu_b_phi[:, :-1]
   cu_b = cu_b.reshape(cu_b.shape[0], 1, cu_b.shape[1]) # shape[num_genes,1,2]
@@ -664,7 +665,8 @@ def cu_vem_mix(cu_b_phi, cu_sigm2, cu_p, cu_x, cu_randint, cu_randint_prec, cu_i
   q_func, bphi = lbfgs_mul_mix(cu_q_mix,cu_b_phi,
                                maxk=10, step_factor=0.55, sigma=0.4,
                                cu_wt_q= cu_wt, cu_x_q=cu_x, cu_y_q=cu_y, cu_n_q=cu_n, cu_zmat_q=cu_zmat, cu_ghq_weights_q=cu_ghq_weights,
-                               cu_randint_q=cu_randint_vector, cu_randint_prec_q=cu_precision_vector, cu_id_data_q=cu_id_data, cu_num_genes_q=cu_num_genes, cu_iteration=cu_iteration) # 15 param
+                               cu_randint_q=cu_randint_vector, cu_randint_prec_q=cu_precision_vector, cu_id_data_q=cu_id_data, cu_num_genes_q=cu_num_genes, cu_iteration=cu_iteration,
+                               max_optim=max_optim, max_line=max_line) # 15 param
   cu_b_phi = cp.asarray((bphi)) # record the new parameters
   cu_b_phi = cu_b_phi.astype(cp.float32)
 
@@ -674,7 +676,7 @@ def cu_vem_mix(cu_b_phi, cu_sigm2, cu_p, cu_x, cu_randint, cu_randint_prec, cu_i
 
   return cu_b_phi, cu_sigm2, cu_p, llkl, cu_randint, cu_randint_prec
 
-def VEM_mix(gene_index, num_iteration,min_iter,ynxid_data,cu_id_data, cu_n_lap,initial_param, null, cum_time):
+def VEM_mix(gene_index, num_iteration,min_iter,ynxid_data,cu_id_data, cu_n_lap,initial_param, null, cum_time, max_optim, max_line):
   '''
   # gene_index: the index of gene you want to analyze by DAESC-GPU
   # num_iteration: the maximum number of EM iteration
@@ -752,7 +754,8 @@ def VEM_mix(gene_index, num_iteration,min_iter,ynxid_data,cu_id_data, cu_n_lap,i
       # Start one E-M iteration
       cu_param, cu_sigm2, cu_p, llkl, cu_randint, cu_randint_prec  = cu_vem_mix(cu_param, cu_sigm2, cu_p,
                                         cu_x, cu_randint, cu_randint_prec, cu_id_data, cu_y, cu_n,
-                                        cu_ghq_weights, cu_ghq_nodes, cu_n_lap, len(gene_index),i, null) # 15 param
+                                        cu_ghq_weights, cu_ghq_nodes, cu_n_lap, len(gene_index),i, null,
+                                        max_optim=max_optim, max_line=max_line) # 15 param
 
       # record the results
       new_gene_index = []
@@ -777,7 +780,7 @@ def VEM_mix(gene_index, num_iteration,min_iter,ynxid_data,cu_id_data, cu_n_lap,i
       print(" ")
   return cu_param_result, cu_sigm2_result, cu_p_result, llkl_record_dict, cum_time
 
-def daesc_mix_gpu(ynidx_data, part =1, num_iteration=50, min_iter=20):  
+def daesc_mix_gpu(ynidx_data, part =1, num_iteration=50, min_iter=20, max_optim=10, max_line=15):  
   ################################################################
   # make one-hot matrix
   labels = ynidx_data[-2, :].astype(int)
@@ -846,7 +849,7 @@ def daesc_mix_gpu(ynidx_data, part =1, num_iteration=50, min_iter=20):
     print("First, under H1 model: ")
     my_param_result, my_sigm2_result, cu_p_result, my_llkl_record_dict, cum_time = VEM_mix(
         part, num_iteration=num_iteration,min_iter=min_iter, ynxid_data=ynidx_data, cu_id_data=cu_id_data,
-        cu_n_lap=2, initial_param=initial_mix_param, null=False, cum_time=cum_time)
+        cu_n_lap=2, initial_param=initial_mix_param, null=False, cum_time=cum_time, max_optim=max_optim, max_line=max_line)
 
     # record results
     my_param_result = my_param_result.get()
@@ -858,7 +861,7 @@ def daesc_mix_gpu(ynidx_data, part =1, num_iteration=50, min_iter=20):
     print("Second, under H0 model: ")
     my_param_null, my_sigm2_null, cu_p_null, my_llkl_null_dict, cum_time = VEM_mix(
         part, num_iteration=num_iteration,min_iter=min_iter, ynxid_data=ynidx_data, cu_id_data=cu_id_data,
-        cu_n_lap=2, initial_param=initial_mix_param, null=True, cum_time=cum_time)
+        cu_n_lap=2, initial_param=initial_mix_param, null=True, cum_time=cum_time, max_optim=max_optim, max_line=max_line)
 
     # record results under H0
     my_param_null = my_param_null.get()
