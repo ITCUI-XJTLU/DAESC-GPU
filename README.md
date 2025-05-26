@@ -29,10 +29,10 @@ n genes/variants across m cells, this parameter should be a NumPy matrix with (2
 
 ```
     ynidx_data matrix :
-    [[ 3.  6.  9.  2.  5.]  # alternative allele read counts (n rows)
+    [[ 3.  6.  9.  2.  5.]  # three alternative allele read counts (n rows)
     [ 4.  7.  1.  8.  3.]
     [ 8.  2.  4.  6.  7.]
-    [12. 15. 14. 10. 12.]  # total allele read counts (n rows)
+    [12. 15. 14. 10. 12.]  # three total allele read counts (n rows)
     [ 8. 10.  8. 14. 10.]
     [14.  7. 10. 12. 14.]
     [ 1.  2.  1.  0.  2.]  # inidividual (1 row)
@@ -45,19 +45,34 @@ n genes/variants across m cells, this parameter should be a NumPy matrix with (2
 
 -  min_iter: (Optional, default=20) Specifies the minimum number of E-M iterations for all genes. For instance, if this parameter is set to 20, all data will be fitted through the first 20 iterations. Afterward, the change in log-likelihood is evaluated. If the changes in log-likelihood for certain genes are negligible, these genes are considered well-fitted, and their results are recorded. Such genes are excluded from further iterations, reducing runtime and improving computational efficiency.
 
-In the below, we will use a example data (10 genes and 30,474 cells) to show the usage of DAESC-BB-GPU(`daesc_gpu.daesc_bb_gpu()`), the use of DAESC-Mix-GPU (`daesc_gpu.daesc_mix_gpu()`) is the same. 
+- max_optim (Optinal, default=10): Specifies the maximum iteration number of our designed BFGS optimizers for multiple objectives. The defaul number is 10. If you inrease this number, it is more likely for the optimizer to find the optimal points. But it will increase the runtime. We found 10 is enough for most cases.  
+
+- max_line  (Optinal, default=15): Sepecifies the maximum interation for line search in each customized BFGS algotirhm. In the algorithm, we need to use line search to find the appropriate step lengths for each genes. If you inrease this number, it is more likely for the optimizer to find the optimal points. But it will increase the runtime. We found 15 is enough for most cases.  
+
+In the below, we will use a example data (10 genes and 30,474 cells) to show the usage of DAESC-BB-GPU(A100):
 
 ```
 import daesc_gpu
 import cupy
 
 example_data = daesc_gpu.load_example_data()
-my_results = daesc_gpu.daesc_bb_gpu(example_data)
+my_bb_results = daesc_gpu.daesc_bb_gpu(example_data)
 ```
 
-It takes 1.00 minutes to finish the trainning. During trainning, we can get the runtime for each E-M iteration. After trainning, you can get the estimates (my_results ):
+It takes 1.01 minutes to finish the trainning. During trainning, we can get the runtime for each E-M iteration. After trainning, you can get the estimates (my_bb_results ):
 
 ![Example Results](daesc_gpu/image/results.png)
+
+The use of DAESC-Mix-GPU (`daesc_gpu.daesc_mix_gpu()`) is the same. 
+
+```
+my_mix_results = daesc_gpu.daesc_mix_gpu(example_data)
+```
+
+It takes 1.57 minutes to finish the trainning. During trainning, we can get the runtime for each E-M iteration. After trainning, you can get the estimates (my_mix_results ):
+
+![Example Results](daesc_gpu/image/results_mix.png)
+
 
 ## Reference
 Our manuscipt will be finished sooner. 
