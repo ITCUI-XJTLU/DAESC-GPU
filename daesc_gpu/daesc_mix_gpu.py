@@ -760,13 +760,13 @@ def VEM_mix(gene_index, num_iteration,min_iter,ynxid_data,cu_id_data, cu_n_lap,i
       new_gene_index = []
       for gene in gene_index:
         (llkl_record_dict[gene])[0] += 1
-        if llkl[gene_index.index(gene)] > (llkl_record_dict[gene])[-1] - 0.001 or i < 1:
-          cu_param_result[gene_index,:] = cu_param
-          cu_sigm2_result[gene_index,:] = cu_sigm2
-          cu_p_result[gene_index,:] = cu_p
-          cu_randint_result[gene_index,:] = cu_randint
-          cu_randint_prec_result[gene_index,:] = cu_randint_prec
-          (llkl_record_dict[gene]).append(llkl[gene_index.index(gene)])
+        # if llkl[gene_index.index(gene)] > (llkl_record_dict[gene])[-1] - 0.001 or i < 1: #backup
+        cu_param_result[gene_index,:] = cu_param
+        cu_sigm2_result[gene_index,:] = cu_sigm2
+        cu_p_result[gene_index,:] = cu_p
+        cu_randint_result[gene_index,:] = cu_randint
+        cu_randint_prec_result[gene_index,:] = cu_randint_prec
+        (llkl_record_dict[gene]).append(llkl[gene_index.index(gene)])
         if i < min_iter or len(llkl_record_dict[gene]) < 4 :
           new_gene_index.append(gene)
         elif ( abs(((llkl_record_dict[gene])[-1] - (llkl_record_dict[gene])[-2]) / (llkl_record_dict[gene])[-1]) > 1e-7
