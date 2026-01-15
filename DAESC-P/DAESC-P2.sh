@@ -105,33 +105,33 @@ echo "════════════════════════�
 
 phase1_start=$(date +%s)
  
-#for read_type in R1 R2; do
-#    output_file="${INDIV_DIR}/Ind${Individual_ID}_S1_${read_type}_001.fastq.gz"
-#    > "$output_file"
+for read_type in R1 R2; do
+    output_file="${INDIV_DIR}/Ind${Individual_ID}_S1_${read_type}_001.fastq.gz"
+    > "$output_file"
     
-#    echo "🔄 Merging ${read_type} files for Individual ${Individual_ID}..."
+    echo "🔄 Merging ${read_type} files for Individual ${Individual_ID}..."
     
     # Find and merge all matching FASTQ.gz files
     # File location: Data_SRR/{SRR_ID}/split_fastq/
     # File naming: {SRR_ID}_Ind{Individual_ID}_{read_type}_001.fastq.gz
     # Note: gzip files can be concatenated directly with cat
-#    file_count=0
-#    while IFS= read -r -d '' file; do
-#        echo "  📎 Adding: $(basename $file)"
-#        cat "$file" >> "$output_file"
-#        file_count=$((file_count + 1))
-#    done < <(find "${DATA_SRR_DIR}" -type f -path "*/split_fastq/*" -name "*_Ind${Individual_ID}_${read_type}_001.fastq.gz" -print0 2>/dev/null | sort -z)
+    file_count=0
+    while IFS= read -r -d '' file; do
+        echo "  📎 Adding: $(basename $file)"
+        cat "$file" >> "$output_file"
+        file_count=$((file_count + 1))
+    done < <(find "${DATA_SRR_DIR}" -type f -path "*/split_fastq/*" -name "*_Ind${Individual_ID}_${read_type}_001.fastq.gz" -print0 2>/dev/null | sort -z)
     
-#    if [[ $file_count -eq 0 ]]; then
-#        echo "  ⚠️ Warning: No ${read_type} files found for Individual ${Individual_ID}"
-#        echo "     Expected location: ${DATA_SRR_DIR}/*/split_fastq/*_Ind${Individual_ID}_${read_type}_001.fastq.gz"
-#    else
-#        # Count total reads in merged compressed file
-#        read_count=$(($(zcat "$output_file" | wc -l) / 4))
-#        echo "  ✅ Merged ${file_count} files → ${output_file}"
-#        echo "     Total reads: ${read_count}"
-#    fi
-#done
+    if [[ $file_count -eq 0 ]]; then
+        echo "  ⚠️ Warning: No ${read_type} files found for Individual ${Individual_ID}"
+        echo "     Expected location: ${DATA_SRR_DIR}/*/split_fastq/*_Ind${Individual_ID}_${read_type}_001.fastq.gz"
+    else
+        # Count total reads in merged compressed file
+        read_count=$(($(zcat "$output_file" | wc -l) / 4))
+        echo "  ✅ Merged ${file_count} files → ${output_file}"
+        echo "     Total reads: ${read_count}"
+    fi
+done
 
 phase1_end=$(date +%s)
 echo ""
@@ -282,20 +282,20 @@ for CHR in "${CHR_LIST[@]}"; do
     # ========================================================================
     # Call variants from RNA-seq data using GATK HaplotypeCaller
     echo "  [1/6] Genotyping..."
-#    singularity exec \
-#        --bind ${ROOT_PATH}:${ROOT_PATH} \
-#        --env SCRATCH1="${SCRATCH1}" \
-#        "${SIF_PATH}" \
-#        bash ${ROOT_PATH}/scr/salsa1_gatk_genotype.sh \
-#            -i ${INPUT_BAM} \
-#            -n ${Individual_ID} \
-#            -r ${REFERENCE_PATH}/refdata-gex-GRCh38-2020-A \
-#            -g ${REFERENCE_PATH}/gatk \
-#            -d ${OUTPUT_DIR_BASE}/${Individual_ID}_step1 \
-#            -o ${Individual_ID}.rna.chr${CHR}.vcf.gz \
-#            -l chr${CHR} \
-#            -m rna \
-#            --threads 5 >> ${CHR_LOG} 2>&1
+    singularity exec \
+        --bind ${ROOT_PATH}:${ROOT_PATH} \
+        --env SCRATCH1="${SCRATCH1}" \
+        "${SIF_PATH}" \
+        bash ${ROOT_PATH}/scr/salsa1_gatk_genotype.sh \
+            -i ${INPUT_BAM} \
+            -n ${Individual_ID} \
+            -r ${REFERENCE_PATH}/refdata-gex-GRCh38-2020-A \
+            -g ${REFERENCE_PATH}/gatk \
+            -d ${OUTPUT_DIR_BASE}/${Individual_ID}_step1 \
+            -o ${Individual_ID}.rna.chr${CHR}.vcf.gz \
+            -l chr${CHR} \
+            -m rna \
+            --threads 5 >> ${CHR_LOG} 2>&1
     echo "        ✅ Genotyping done"
 
     # ========================================================================
@@ -303,20 +303,20 @@ for CHR in "${CHR_LIST[@]}"; do
     # ========================================================================
     # Filter variants: GQ>=30, SNVs only (single nucleotide variants)
     echo "  [1b/6] Filtering VCF..."
-#    singularity exec \
-#        --bind ${ROOT_PATH}:${ROOT_PATH} \
-#        --env SCRATCH1="${SCRATCH1}" \
-#        "${SIF_PATH}" \
-#        bcftools view -i 'FORMAT/GQ>=30 && strlen(REF)=1 && strlen(ALT)=1' \
-#            ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/${Individual_ID}.rna.chr${CHR}.vcf.gz \
-#            -Oz -o ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/filtered_${Individual_ID}.rna.chr${CHR}.vcf.gz >> ${CHR_LOG} 2>&1
+    singularity exec \
+        --bind ${ROOT_PATH}:${ROOT_PATH} \
+        --env SCRATCH1="${SCRATCH1}" \
+        "${SIF_PATH}" \
+        bcftools view -i 'FORMAT/GQ>=30 && strlen(REF)=1 && strlen(ALT)=1' \
+            ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/${Individual_ID}.rna.chr${CHR}.vcf.gz \
+            -Oz -o ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/filtered_${Individual_ID}.rna.chr${CHR}.vcf.gz >> ${CHR_LOG} 2>&1
     
     # Index filtered VCF
-#    singularity exec \
-#        --bind ${ROOT_PATH}:${ROOT_PATH} \
-#        --env SCRATCH1="${SCRATCH1}" \
-#        "${SIF_PATH}" \
-#        bcftools index -t ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/filtered_${Individual_ID}.rna.chr${CHR}.vcf.gz >> ${CHR_LOG} 2>&1
+    singularity exec \
+        --bind ${ROOT_PATH}:${ROOT_PATH} \
+        --env SCRATCH1="${SCRATCH1}" \
+        "${SIF_PATH}" \
+        bcftools index -t ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/filtered_${Individual_ID}.rna.chr${CHR}.vcf.gz >> ${CHR_LOG} 2>&1
     echo "        ✅ VCF filtering done"
 
     # ========================================================================
@@ -324,21 +324,21 @@ for CHR in "${CHR_LIST[@]}"; do
     # ========================================================================
     # Phase variants using SHAPEIT5 reference panel
     echo "  [2/6] Phasing..."
-#    singularity exec \
-#        --bind ${ROOT_PATH}:${ROOT_PATH} \
-#        --env SCRATCH1="${SCRATCH1}" \
-#        "${SIF_PATH}" \
-#        bash ${ROOT_PATH}/scr/salsa2_phase_vcf_shapeit5.sh \
-#            --library_id pbmc_1k \
-#            --inputvcf ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/filtered_${Individual_ID}.rna.chr${CHR}.vcf.gz \
-#            --outputdir ${OUTPUT_DIR_BASE}/${Individual_ID}_step3 \
-#            --outputvcf pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.vcf.gz \
-#            --phasingref ${REFERENCE_PATH} \
-#            --interval chr${CHR} \
-#            --hcphase \
-#            --snvonly \
-#            --verbose \
-#            --threads 5 >> ${CHR_LOG} 2>&1
+    singularity exec \
+        --bind ${ROOT_PATH}:${ROOT_PATH} \
+        --env SCRATCH1="${SCRATCH1}" \
+        "${SIF_PATH}" \
+        bash ${ROOT_PATH}/scr/salsa2_phase_vcf_shapeit5.sh \
+            --library_id pbmc_1k \
+            --inputvcf ${OUTPUT_DIR_BASE}/${Individual_ID}_step1/filtered_${Individual_ID}.rna.chr${CHR}.vcf.gz \
+            --outputdir ${OUTPUT_DIR_BASE}/${Individual_ID}_step3 \
+            --outputvcf pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.vcf.gz \
+            --phasingref ${REFERENCE_PATH} \
+            --interval chr${CHR} \
+            --hcphase \
+            --snvonly \
+            --verbose \
+            --threads 5 >> ${CHR_LOG} 2>&1
     echo "        ✅ Phasing done"
 
     # ========================================================================
@@ -346,20 +346,20 @@ for CHR in "${CHR_LIST[@]}"; do
     # ========================================================================
     # Annotate variants with gene information using GATK Funcotator
     echo "  [3/6] Annotation..."
-#    singularity exec \
-#        --bind ${ROOT_PATH}:${ROOT_PATH} \
-#        --env SCRATCH1="${SCRATCH1}" \
-#        "${SIF_PATH}" \
-#        bash ${ROOT_PATH}/scr/salsa3_gatk_anno_vcf.sh \
-#            --library_id pbmc_1k \
-#            --inputvcf ${OUTPUT_DIR_BASE}/${Individual_ID}_step3/pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.vcf.gz \
-#            --outputdir ${OUTPUT_DIR_BASE}/${Individual_ID}_step4 \
-#            --outputvcf pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.funco.vcf.gz \
-#            --reference ${REFERENCE_PATH}/refdata-gex-GRCh38-2020-A \
-#            --funcotation ${REFERENCE_PATH}/funcotator_dataSources.v1.6.20190124g \
-#            --output_table pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.formatted.csv \
-#            --modality rna \
-#            --threads 5 >> ${CHR_LOG} 2>&1
+    singularity exec \
+        --bind ${ROOT_PATH}:${ROOT_PATH} \
+        --env SCRATCH1="${SCRATCH1}" \
+        "${SIF_PATH}" \
+        bash ${ROOT_PATH}/scr/salsa3_gatk_anno_vcf.sh \
+            --library_id pbmc_1k \
+            --inputvcf ${OUTPUT_DIR_BASE}/${Individual_ID}_step3/pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.vcf.gz \
+            --outputdir ${OUTPUT_DIR_BASE}/${Individual_ID}_step4 \
+            --outputvcf pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.funco.vcf.gz \
+            --reference ${REFERENCE_PATH}/refdata-gex-GRCh38-2020-A \
+            --funcotation ${REFERENCE_PATH}/funcotator_dataSources.v1.6.20190124g \
+            --output_table pipe3_${Individual_ID}.pass.rna.chr${CHR}hcphase.formatted.csv \
+            --modality rna \
+            --threads 5 >> ${CHR_LOG} 2>&1
     echo "        ✅ Annotation done"
 
     # ========================================================================

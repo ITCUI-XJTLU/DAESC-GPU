@@ -1,4 +1,4 @@
-# DAESC-GPU: A GPU-powered scalable software for single-cell allele-specific expression analysis 
+# DAESC+: High-performance, integrated software for single-cell allele-specific expression data
 
 Single-cell RNA sequencing (scRNA-seq) is a transformative technology for unraveling the roles specific cell types play in disease pathology. A critical step toward this goal is identifying genes that exhibit differential expression across cell types.
 
@@ -13,7 +13,13 @@ The DAESC framework includes two core methods: DAESC-BB and DAESC-Mix. DAESC-BB 
 
 We present a schematic illustration of DAESC-Mix-GPU. Starting with data from a high-throughput sequencer, we generate count matrices (Y and N), where rows represent variants and columns represent cells. The first section of the figure depicts the statistical model for a single variant, while the second section demonstrates how DAESC-GPU employs matrix operations to analyze multiple variants simultaneously. Finally, the bottom section illustrates the execution of the entire variational EM algorithm on the GPU using CuPy, culminating in the generation of all estimates provided by DAESC-Mix-GPU.
 
-## Install 
+## DAESC-P 
+
+For detailed documentation of DAESC-P, please see the
+[DAESC-P README](DAESC-P/README.md).
+
+
+## DAESC-GPU Install 
 DAESC-GPU significantly accelerates computational speed through GPU parallelization. To use DAESC-GPU, you need access to an NVIDIA GPU. Here are three typical ways to achieve GPU access:
 
 - Renting GPUs online via cloud services (e.g., Amazon EC2)
@@ -29,7 +35,7 @@ You can download and install our package on Gogle Colab:
 !pip install git+https://github.com/ITCUI-XJTLU/DAESC-GPU.git
 ```
 
-## Example 
+## DAESC-GPU Example 
 DAESC-GPU provide two functions: `daesc_gpu.daesc_bb_gpu()` `daesc_gpu.daesc_mix_gpu()` for the two components. Both of two functions need four parameters. 
 
 - ynidx_data (Required): A NumPy matrix structured to represent allele counts, individual labels, and covariates. For analyzing n genes/variants across m cells, this matrix must have (2n + 2) rows and m columns:
