@@ -1,6 +1,4 @@
 cupy
-time
-math
 numpy
 pandas
 csv 
@@ -15,4 +13,3 @@ pandas
 statsmodels.api 
 scipy.optimize 
 scipy.special 
-time
