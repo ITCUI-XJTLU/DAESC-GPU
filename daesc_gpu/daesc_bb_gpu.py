@@ -7,7 +7,7 @@ from csv import reader
 from scipy import special
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
-
+ 
 import matplotlib.pyplot as plt
 from scipy.stats import chi2
 import gc

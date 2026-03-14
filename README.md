@@ -9,7 +9,7 @@ We introduce DAESC-GPU, a fast, scalable re-implementation of DAESC that leverag
 The DAESC framework includes two core methods: DAESC-BB and DAESC-Mix. DAESC-BB employs a beta-binomial regression model incorporating individual-specific random effects to manage sample correlation arising from multiple cells per individual. DAESC-Mix extends this approach by implicitly modeling haplotype phasing. Correspondingly, our GPU-accelerated software contains two analogous components: DAESC-BB-GPU and DAESC-Mix-GPU.
 
 ## Model
-![Schematic Plot](DAESC-GPU/image/sche.png)
+![Schematic Plot](DAESC_gpu/image/sche.png)
 
 We present a schematic illustration of DAESC-Mix-GPU. Starting with data from a high-throughput sequencer, we generate count matrices (Y and N), where rows represent variants and columns represent cells. The first section of the figure depicts the statistical model for a single variant, while the second section demonstrates how DAESC-GPU employs matrix operations to analyze multiple variants simultaneously. Finally, the bottom section illustrates the execution of the entire variational EM algorithm on the GPU using CuPy, culminating in the generation of all estimates provided by DAESC-Mix-GPU.
 
@@ -18,6 +18,7 @@ We present a schematic illustration of DAESC-Mix-GPU. Starting with data from a 
 For detailed documentation of DAESC-P, please see the
 [DAESC-P README](DAESC-P/README.md).
 
+In order to use DAESC-P, here is the link [DAESC-P](https://zenodo.org/records/18009295)
 
 ## DAESC-GPU Install 
 DAESC-GPU significantly accelerates computational speed through GPU parallelization. To use DAESC-GPU, you need access to an NVIDIA GPU. Here are three typical ways to achieve GPU access:
@@ -82,7 +83,7 @@ my_bb_results = daesc_gpu.daesc_bb_gpu(example_data)
 
 It takes 1.01 minutes to finish the trainning. During trainning, we can get the runtime for each E-M iteration. After trainning, you can get the estimates (my_bb_results ):
 
-![Example Results](DAESC-GPU/image/results.png)
+![Example Results](DAESC_gpu/image/results.png)
 
 The use of DAESC-Mix-GPU (`daesc_gpu.daesc_mix_gpu()`) is the same. 
 
@@ -92,7 +93,7 @@ my_mix_results = daesc_gpu.daesc_mix_gpu(example_data)
 
 It takes 1.57 minutes to finish the trainning. During trainning, we can get the runtime for each E-M iteration. After trainning, you can get the estimates (my_mix_results ):
 
-![Example Results](DAESC-GPU/image/results_mix.png)
+![Example Results](DAESC_gpu/image/results_mix.png)
 
 
 ## Reference
